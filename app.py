@@ -7,19 +7,28 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
-from config import APP_TITLE, APP_SUBTITLE, SPECTRE_PRIMARY, SPECTRE_BG_GRADIENT
-from data_ingestion import load_csv_file
-from schema_mapper import suggest_schema, build_canonical_long
-from preprocess import coerce_time, filter_series, basic_clean
-from logging_utils import log_error
-from engine_orchestrator import (
+# ---- Corrected imports for Option B folder structure ----
+from core.config import (
+    APP_TITLE,
+    APP_SUBTITLE,
+    SPECTRE_PRIMARY,
+    SPECTRE_BG_GRADIENT,
+)
+
+from core.data_ingestion import load_csv_file
+from core.schema_mapper import suggest_schema, build_canonical_long
+from core.preprocess import coerce_time, filter_series, basic_clean
+from core.logging_utils import log_error
+
+from engines.engine_orchestrator import (
     run_queue_block,
     run_kalman_block,
     run_wavelet_block,
     run_mpc_block,
     run_routing_block,
 )
-from ai_explainer import explain_block
+
+from interfaces.ai_explainer import explain_block
 
 
 # ---------------------- Spectre Holographic CSS ----------------------
