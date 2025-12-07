@@ -337,40 +337,62 @@ def main():
                 metric_sel_mpc = st.selectbox("Metric (emissions/nitrates proxy)", metrics, key="mpc_metric")
 
             filtered_mpc = filter_series(canonical, region_sel_mpc, metric_sel_mpc)
+
+            # ---- NEW FIX: Protect against empty or non-numeric series ----
             if filtered_mpc.empty:
-                st.warning("No data for MPC after filtering.")
+                st.warning("No numeric data available for MPC after filtering. Choose another region/metric.")
                 mpc_context = "No MPC run."
             else:
-                series_mpc = filtered_mpc.set_index("time")["value"].sort_index()
-                current_val = float(series_mpc.iloc[-1])
-                st.caption(f"Current value (latest observation): {current_val:.3f}")
+                series_mpc = (
+                    filtered_mpc
+                    .set_index("time")["value"]
+                    .sort_index()
+                    .dropna()
+                )
 
-                target_val = st.number_input("Target value (e.g., emissions/nitrates cap)", value=max(current_val * 0.7, 0.0))
-                horizon = st.slider("Horizon steps (years or periods)", 3, 20, 7)
-                max_delta = st.number_input("Max absolute change per step (optional)", value=float(0.0))
-
-                if st.button("Generate MPC-style Trajectory", key="mpc_run"):
-                    try:
-                        max_delta_use = None if max_delta <= 0 else max_delta
-                        traj = run_mpc_block(current_val, target_val, horizon, max_delta_use)
-
-                        fig = spectre_line_chart(
-                            x=traj.index,
-                            y_dict={"Trajectory": traj},
-                            title="MPC-style Adjustment Path",
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-
-                        mpc_context = (
-                            f"MPC trajectory from {current_val:.3f} to {target_val:.3f} "
-                            f"over horizon={horizon}, max_delta={max_delta_use}."
-                        )
-                    except Exception as e:
-                        log_error("MPC engine", e)
-                        st.error(f"MPC engine failed: {e}")
-                        mpc_context = "MPC engine failed."
+                if series_mpc.empty:
+                    st.error("Filtered series contains no numeric values after cleaning.")
+                    mpc_context = "No MPC run."
                 else:
-                    mpc_context = "No MPC trajectory generated yet."
+                    try:
+                        current_val = float(series_mpc.iloc[-1])
+                    except Exception:
+                        st.error("Latest observation is not numeric – cannot compute MPC trajectory.")
+                        mpc_context = "No MPC run."
+                        current_val = None
+
+                    if current_val is not None:
+                        st.caption(f"Current value (latest observation): {current_val:.3f}")
+
+                        target_val = st.number_input(
+                            "Target value (e.g., emissions/nitrates cap)",
+                            value=max(current_val * 0.7, 0.0)
+                        )
+                        horizon = st.slider("Horizon steps (years or periods)", 3, 20, 7)
+                        max_delta = st.number_input("Max absolute change per step (optional)", value=float(0.0))
+
+                        if st.button("Generate MPC-style Trajectory", key="mpc_run"):
+                            try:
+                                max_delta_use = None if max_delta <= 0 else max_delta
+                                traj = run_mpc_block(current_val, target_val, horizon, max_delta_use)
+
+                                fig = spectre_line_chart(
+                                    x=traj.index,
+                                    y_dict={"Trajectory": traj},
+                                    title="MPC-style Adjustment Path",
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
+
+                                mpc_context = (
+                                    f"MPC trajectory from {current_val:.3f} to {target_val:.3f} "
+                                    f"over horizon={horizon}, max_delta={max_delta_use}."
+                                )
+                            except Exception as e:
+                                log_error("MPC engine", e)
+                                st.error(f"MPC engine failed: {e}")
+                                mpc_context = "MPC engine failed."
+                        else:
+                            mpc_context = "No MPC trajectory generated yet."
 
         with right:
             st.markdown("###### Spectre Agent – Control Insight")
