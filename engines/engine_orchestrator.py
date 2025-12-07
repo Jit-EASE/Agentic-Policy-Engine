@@ -1,14 +1,14 @@
-# engine_orchestrator.py
+# engines/engine_orchestrator.py
 
 from __future__ import annotations
 from typing import Dict, Any
 import pandas as pd
 
-from queue_engine import mmc_queue, queue_summary_dict
-from kalman_engine import univariate_kalman_smoother
-from wavelet_engine import wavelet_decompose
-from mpc_engine import simple_mpc_trajectory
-from routing_engine import shortest_routes
+from engines.queue_engine import mmc_queue, queue_summary_dict
+from engines.kalman_engine import univariate_kalman_smoother
+from engines.wavelet_engine import wavelet_decompose
+from engines.mpc_engine import simple_mpc_trajectory
+from engines.routing_engine import shortest_routes
 
 
 def run_queue_block(arrival_rate: float, service_rate: float, servers: int) -> Dict[str, Any]:
