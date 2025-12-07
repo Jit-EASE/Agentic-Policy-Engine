@@ -1,9 +1,10 @@
-# schema_mapper.py
+# core/schema_mapper.py
 
 from __future__ import annotations
 from typing import Dict, List
 import pandas as pd
-from config import (
+
+from .config import (
     DEFAULT_TIME_COL_CANDIDATES,
     DEFAULT_REGION_COL_CANDIDATES,
     DEFAULT_VALUE_COL_CANDIDATES,
