@@ -1,4 +1,4 @@
-# config.py
+# core/config.py
 
 APP_TITLE = "Agentic Policy Engine for Control, Tensor Reasoning & Econometrics – HPC System"
 APP_SUBTITLE = "System Architecture, Design and Engineering"
