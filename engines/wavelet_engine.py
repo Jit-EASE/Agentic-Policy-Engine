@@ -1,4 +1,4 @@
-# wavelet_engine.py
+# engines/wavelet_engine.py
 
 from __future__ import annotations
 from typing import Dict
